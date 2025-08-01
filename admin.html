@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Operação Diamante - Painel Heroínas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #1c1917;
+      color: #e7e5e4;
+    }
+    .title-font {
+      font-family: 'Black Ops One', cursive;
+      letter-spacing: 0.05em;
+    }
+    .card {
+      background-color: rgba(41, 37, 36, 0.85);
+      border: 1px solid #78716c;
+      backdrop-filter: blur(10px);
+    }
+    .rose-gold-text {
+      color: #fda4af;
+    }
+    .gold-text {
+      color: #facc15;
+    }
+    .diamond-input {
+      background-color: #292524;
+      border: 1px solid #78716c;
+      color: #e7e5e4;
+    }
+    .diamond-button {
+      background-color: #f43f5e;
+      transition: background-color 0.3s ease;
+    }
+    .diamond-button:hover {
+      background-color: #e11d48;
+    }
+    .progress-bar-fill {
+      background: linear-gradient(to right, #f9a8d4, #f472b6);
+      transition: width 0.5s ease-in-out;
+      height: 30px;
+      border-radius: 9999px;
+      position: relative;
+    }
+    .tab-active {
+      background-color: #f43f5e;
+      color: white;
+    }
+    /* Heroínas pista */
+    .hero-track {
+      background-color: #3b322f;
+      border-radius: 9999px;
+      position: relative;
+      height: 50px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 0 10px rgba(255 255 255 / 0.1);
+    }
+    .hero-progress {
+      background: linear-gradient(90deg, #fda4af 0%, #f43f5e 100%);
+      height: 50px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      position: relative;
+      transition: width 0.7s ease;
+      box-shadow: 0 0 15px #f43f5e;
+    }
+    .hero-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2.5rem;
+      user-select: none;
+      filter: drop-shadow(0 0 3px #f43f5e);
+    }
+    /* Podium */
+    .podium {
+      position: relative;
+      font-size: 2.8rem;
+      margin-left: 15px;
+      user-select: none;
+      filter: drop-shadow(0 0 6px gold);
+      animation: pulse 2s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1) }
+      50% { transform: scale(1.15) }
+    }
+    /* Form labels */
+    label {
+      font-weight: 600;
+    }
+    /* Botões Exportar/Importar */
+    #import-file {
+      display: none;
+    }
+    .btn-secondary {
+      background-color: #44403c;
+      color: #e7e5e4;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-left: 0.5rem;
+    }
+    .btn-secondary:hover {
+      background-color: #57534e;
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+<header class="bg-neutral-800 text-white p-6 text-center border-b-4 border-rose-500 shadow-lg">
+  <h1 class="text-4xl md:text-5xl title-font">Operação Diamante</h1>
+  <p class="text-md md:text-lg font-semibold mt-1">Painel de Controle do Esquadrão</p>
+</header>
+
+<!-- Navegação -->
+<div class="flex justify-center gap-4 p-4">
+  <button id="tab-ranking" class="px-4 py-2 rounded-lg font-bold bg-stone-700 hover:bg-stone-600 tab-active">🏆 Placar de Honra</button>
+  <button id="tab-hero" class="px-4 py-2 rounded-lg font-bold bg-stone-700 hover:bg-stone-600">💎 Missão das Heroínas</button>
+  <button id="tab-input" class="px-4 py-2 rounded-lg font-bold bg-stone-700 hover:bg-stone-600">✍️ Inserir Dados</button>
+</div>
+
+<main class="container mx-auto p-4 md:p-8">
+
+  <!-- Ranking Clássico -->
+  <div id="ranking-section" class="card p-6 rounded-2xl shadow-lg relative">
+    <h2 class="text-2xl title-font gold-text mb-4 flex items-center justify-between">
+      🏆 Placar de Honra
+      <button id="reset-data" class="diamond-button py-1 px-3 text-sm rounded-lg ml-2">🔄 Resetar Tudo</button>
+    </h2>
+    <div
+      class="grid grid-cols-11 gap-2 text-xs text-stone-400 uppercase tracking-wider pb-2 px-2 border-b border-stone-600"
+    >
+      <div class="col-span-1 text-center">Pos.</div>
+      <div class="col-span-2">Agente</div>
+      <div class="text-center" title="Ligaçoes">📞</div>
+      <div class="text-center" title="WhatsApp">💬</div>
+      <div class="text-center" title="Alvos Mapeados">💖</div>
+      <div class="text-center" title="Dossiês">📂</div>
+      <div class="text-center" title="Neutralizações">✅</div>
+      <div class="text-center" title="Infiltrações">🤝</div>
+      <div class="text-center" title="Missão Cumprida">🏡</div>
+      <div class="col-span-2 text-center font-bold">Total</div>
+    </div>
+    <div id="ranking-body"></div>
+  </div>
+
+  <!-- Heroínas -->
+  <div id="hero-section" class="card p-6 rounded-2xl shadow-lg hidden">
+    <h2 class="text-2xl title-font rose-gold-text mb-6">💎 Missão das Heroínas</h2>
+    <div id="hero-body" class="space-y-6"></div>
+  </div>
+
+  <!-- Inserir Dados -->
+  <div id="input-section" class="card p-6 rounded-2xl shadow-lg hidden max-w-3xl mx-auto">
+    <h2 class="text-2xl title-font rose-gold-text mb-6">✍️ Inserir Dados do Agente</h2>
+
+    <div class="mb-4">
+      <label for="participant-select" class="block mb-1">Selecione a Agente</label>
+      <select id="participant-select" class="w-full p-2 diamond-input rounded-md text-stone-200 bg-[#292524]">
+        <!-- Opções preenchidas pelo JS -->
+      </select>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div>
+        <label for="input-ligacoes" class="block mb-1">📞 Ligações</label>
+        <input type="number" min="0" id="input-ligacoes" class="diamond-input w-full p-2 rounded-md" placeholder="0" />
+      </div>
+      <div>
+        <label for="input-whatsapp" class="block mb-1">💬 WhatsApp</label>
+        <input type="number" min="0" id="input-whatsapp" class="diamond-input w-full p-2 rounded-md" placeholder="0" />
+      </div>
+      <div>
+        <label for="input-novo_numero" class="block mb-1">💖 Alvos Mapeados</label>
+        <input type="number" min="0" id="input-novo_numero" class="diamond-input w-full p-2 rounded-md" placeholder="0" />
+      </div>
+      <div>
+        <label for="input-pasta" class="block mb-1">📂 Dossiês</label>
+        <input type="number" min="0" id="input-pasta" class="diamond-input w-full p-2 rounded-md" placeholder="0" />
+      </div>
+      <div>
+        <label for="input-aprovacao" class="block mb-1">✅ Neutralizações</label>
+        <input type="number" min="0" id="input-aprovacao" class="diamond-input w-full p-2 rounded-md" placeholder="0" />
+      </div>
+      <div>
+        <label for="input-visita" class="block mb-1">🤝 Infiltrações</label>
+        <input type="number" min="0" id="input-visita" class="diamond-input w-full p-2 rounded-md" placeholder="0" />
+      </div>
+      <div>
+        <label for="input-venda" class="block mb-1">🏡 Missão Cumprida</label>
+        <input type="number" min="0" id="input-venda" class="diamond-input w-full p-2 rounded-md" placeholder="0" />
+      </div>
+    </div>
+
+    <button id="save-data" class="diamond-button w-full text-white py-3 rounded-lg font-bold text-lg">Salvar Dados</button>
+
+    <p id="feedback" class="mt-3 text-green-400 font-semibold opacity-0 transition-opacity">Dados salvos com sucesso!</p>
+
+    <div class="mt-8 flex gap-3 items-center">
+      <button id="export-data" class="btn-secondary">💾 Exportar Dados (JSON)</button>
+      <label for="import-file" class="btn-secondary cursor-pointer">📂 Importar Dados (JSON)</label>
+      <input type="file" id="import-file" accept="application/json" />
+    </div>
+  </div>
+
+</main>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const tabRanking = document.getElementById("tab-ranking");
+    const tabHero = document.getElementById("tab-hero");
+    const tabInput = document.getElementById("tab-input");
+
+    const rankingSection = document.getElementById("ranking-section");
+    const heroSection = document.getElementById("hero-section");
+    const inputSection = document.getElementById("input-section");
+
+    const rankingBody = document.getElementById("ranking-body");
+    const heroBody = document.getElementById("hero-body");
+
+    const participantSelect = document.getElementById("participant-select");
+
+    const inputs = {
+      ligacoes: document.getElementById("input-ligacoes"),
+      whatsapp: document.getElementById("input-whatsapp"),
+      novo_numero: document.getElementById("input-novo_numero"),
+      pasta: document.getElementById("input-pasta"),
+      aprovacao: document.getElementById("input-aprovacao"),
+      visita: document.getElementById("input-visita"),
+      venda: document.getElementById("input-venda"),
+    };
+
+    const saveBtn = document.getElementById("save-data");
+    const feedback = document.getElementById("feedback");
+    const resetBtn = document.getElementById("reset-data");
+    const exportBtn = document.getElementById("export-data");
+    const importFileInput = document.getElementById("import-file");
+
+    // Ícones para cada métrica para usar no ranking e formulário
+    const metricIcons = {
+      ligacoes: "📞",
+      whatsapp: "💬",
+      novo_numero: "💖",
+      pasta: "📂",
+      aprovacao: "✅",
+      visita: "🤝",
+      venda: "🏡",
+    };
+
+    // MÉTRICAS e regras de pontuação
+    const metrics = [
+      { id: "ligacoes", points: 10, divisor: 500 },
+      { id: "whatsapp", points: 8, divisor: 500 },
+      { id: "novo_numero", points: 5, divisor: 5 },
+      { id: "pasta", points: 15, divisor: 3 },
+      { id: "aprovacao", points: 20, divisor: 1 },
+      { id: "visita", points: 25, divisor: 6 },
+      { id: "venda", points: 100, divisor: 1 },
+    ];
+
+    // Dados padrão para inicialização
+    const defaultParticipants = [
+      { name: "Sarah", scores: { ligacoes: 0, whatsapp: 0, novo_numero: 0, pasta: 0, aprovacao: 0, visita: 0, venda: 0 }, total: 0 },
+      { name: "Julia", scores: { ligacoes: 0, whatsapp: 0, novo_numero: 0, pasta: 0, aprovacao: 0, visita: 0, venda: 0 }, total: 0 },
+      { name: "Maria Eduarda", scores: { ligacoes: 0, whatsapp: 0, novo_numero: 0, pasta: 0, aprovacao: 0, visita: 0, venda: 0 }, total: 0 },
+      { name: "Micaelly", scores: { ligacoes: 0, whatsapp: 0, novo_numero: 0, pasta: 0, aprovacao: 0, visita: 0, venda: 0 }, total: 0 },
+      { name: "Isabella", scores: { ligacoes: 0, whatsapp: 0, novo_numero: 0, pasta: 0, aprovacao: 0, visita: 0, venda: 0 }, total: 0 },
+      { name: "Agente 6", scores: { ligacoes: 0, whatsapp: 0, novo_numero: 0, pasta: 0, aprovacao: 0, visita: 0, venda: 0 }, total: 0 },
+    ];
+
+    let participants = [];
+
+    // Níveis e cores
+    const niveis = [
+      { limit: 0, name: "Recruta 🔰", color: "bg-gray-500" },
+      { limit: 100, name: "Especialista ⭐", color: "bg-blue-500" },
+      { limit: 200, name: "Veterana ⭐⭐", color: "bg-yellow-500" },
+      { limit: 350, name: "Lenda de Diamante 💎", color: "bg-rose-500" },
+    ];
+
+    // Medalhas para top 3
+    const medals = ["🥇", "🥈", "🥉"];
+
+    // Função para salvar dados no localStorage
+    function saveData() {
+      localStorage.setItem("operacaoDiamanteDataV20", JSON.stringify(participants));
+    }
+
+    // Carregar dados do localStorage ou default
+    function loadData() {
+      const saved = localStorage.getItem("operacaoDiamanteDataV20");
+      participants = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(defaultParticipants));
+    }
+
+    // Calcular total de pontos com base nas regras de métricas
+    function calculateTotal(scores) {
+      return metrics.reduce((acc, metric) => {
+        const qty = scores[metric.id] || 0;
+        const blocks = Math.floor(qty / metric.divisor);
+        return acc + blocks * metric.points;
+      }, 0);
+    }
+
+    // Atualizar total em cada participante
+    function updateTotals() {
+      participants.forEach((p) => (p.total = calculateTotal(p.scores)));
+    }
+
+    // Renderizar ranking clássico
+    function renderRanking() {
+      updateTotals();
+      participants.sort((a, b) => b.total - a.total);
+      rankingBody.innerHTML = "";
+
+      participants.forEach((p, i) => {
+        const posText = p.total > 0 ? (medals[i] || `${i + 1}.`) : "-";
+        const posColor = p.total > 0 ? "text-yellow-400" : "text-stone-600";
+
+        // Nível atual
+        let currentTierIndex = niveis.slice().reverse().findIndex((tier) => p.total >= tier.limit);
+        let currentTier = niveis[niveis.length - 1 - currentTierIndex];
+        let nextTier = niveis[niveis.length - currentTierIndex];
+
+        let progress = 0;
+        if (nextTier) {
+          const start = currentTier.limit;
+          const end = nextTier.limit;
+          progress = ((p.total - start) / (end - start)) * 100;
+        } else {
+          progress = p.total > 0 ? 100 : 0;
+        }
+
+        // Linha do ranking
+        const row = document.createElement("div");
+        row.className = "ranking-row p-3 grid grid-cols-11 gap-2 items-center border-b border-stone-600";
+        if (i === 0 && p.total > 0) row.classList.add("first-place");
+
+        row.innerHTML = `
+          <div class="text-center font-bold text-2xl ${posColor}">${posText}</div>
+          <div class="col-span-2 font-bold text-lg text-stone-200 flex items-center gap-2">
+            ${p.name}
+            <span class="performance-badge badge text-white font-bold py-1 px-3 rounded-full text-xs ${currentTier.color}">${currentTier.name}</span>
+          </div>
+          ${metrics.map(m => `<div class="text-center text-stone-300" title="${m.id}">${metricIcons[m.id]} ${p.scores[m.id]||0}</div>`).join("")}
+          <div class="col-span-2 text-right title-font text-rose-400 text-3xl font-bold">${p.total}</div>
+        `;
+        rankingBody.appendChild(row);
+      });
+    }
+
+    // Renderizar pista heroínas
+    function renderHero() {
+      updateTotals();
+      participants.sort((a, b) => b.total - a.total);
+      heroBody.innerHTML = "";
+
+      participants.forEach((p, i) => {
+        // Progresso relativo 0-100 para a pista
+        const maxPoints = Math.max(...participants.map(pt => pt.total), 1);
+        const percent = Math.min(100, (p.total / maxPoints) * 100);
+
+        // Podium medalha só para top 3
+        const podium = i < 3 ? `<span class="podium">${medals[i]}</span>` : "";
+
+        // Cada heroína pista
+        const heroDiv = document.createElement("div");
+        heroDiv.className = "hero-track";
+        heroDiv.innerHTML = `
+          <div class="hero-icon">${metricIcons.venda}</div>
+          <div class="hero-progress" style="width: ${percent}%; min-width: 80px;">
+            ${p.name} ${podium} — <strong>${p.total} pts</strong>
+          </div>
+        `;
+        heroBody.appendChild(heroDiv);
+      });
+    }
+
+    // Popular select com nomes das heroínas
+    function populateSelect() {
+      participantSelect.innerHTML = "";
+      participants.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.name;
+        opt.textContent = p.name;
+        participantSelect.appendChild(opt);
+      });
+    }
+
+    // Limpar inputs
+    function clearInputs() {
+      Object.values(inputs).forEach((input) => (input.value = ""));
+    }
+
+    // Função para mostrar feedback
+    function showFeedback(text = "Dados salvos com sucesso!") {
+      feedback.textContent = text;
+      feedback.style.opacity = "1";
+      setTimeout(() => {
+        feedback.style.opacity = "0";
+      }, 1800);
+    }
+
+    // Salvar dados do formulário no participante selecionado
+    saveBtn.addEventListener("click", () => {
+      const selectedName = participantSelect.value;
+      const p = participants.find((pt) => pt.name === selectedName);
+      if (!p) return;
+
+      Object.entries(inputs).forEach(([key, input]) => {
+        const val = parseInt(input.value);
+        if (!isNaN(val) && val > 0) {
+          p.scores[key] = (p.scores[key] || 0) + val;
+        }
+      });
+
+      saveData();
+      renderRanking();
+      renderHero();
+      clearInputs();
+      showFeedback();
+    });
+
+    // Resetar dados gerais
+    resetBtn.addEventListener("click", () => {
+      if (confirm("Tem certeza que deseja resetar TODOS os dados? Essa ação é irreversível.")) {
+        localStorage.removeItem("operacaoDiamanteDataV20");
+        participants = JSON.parse(JSON.stringify(defaultParticipants));
+        renderRanking();
+        renderHero();
+        populateSelect();
+      }
+    });
+
+    // Exportar dados para JSON
+    exportBtn.addEventListener("click", () => {
+      const dataStr = JSON.stringify(participants, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "operacao_diamante_backup.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Importar JSON e carregar dados
+    importFileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const importedData = JSON.parse(evt.target.result);
+          // Verificar se é array e estrutura básica
+          if (Array.isArray(importedData) && importedData.every(p => p.name && p.scores)) {
+            participants = importedData;
+            saveData();
+            renderRanking();
+            renderHero();
+            populateSelect();
+            alert("Dados importados com sucesso!");
+          } else {
+            alert("Arquivo JSON inválido!");
+          }
+        } catch {
+          alert("Erro ao ler o arquivo JSON!");
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = ""; // Reset input para permitir novo upload depois
+    });
+
+    // Controle das tabs
+    tabRanking.addEventListener("click", () => {
+      tabRanking.classList.add("tab-active");
+      tabHero.classList.remove("tab-active");
+      tabInput.classList.remove("tab-active");
+
+      rankingSection.classList.remove("hidden");
+      heroSection.classList.add("hidden");
+      inputSection.classList.add("hidden");
+    });
+
+    tabHero.addEventListener("click", () => {
+      tabHero.classList.add("tab-active");
+      tabRanking.classList.remove("tab-active");
+      tabInput.classList.remove("tab-active");
+
+      rankingSection.classList.add("hidden");
+      heroSection.classList.remove("hidden");
+      inputSection.classList.add("hidden");
+    });
+
+    tabInput.addEventListener("click", () => {
+      tabInput.classList.add("tab-active");
+      tabRanking.classList.remove("tab-active");
+      tabHero.classList.remove("tab-active");
+
+      rankingSection.classList.add("hidden");
+      heroSection.classList.add("hidden");
+      inputSection.classList.remove("hidden");
+    });
+
+    // Inicialização
+    function init() {
+      loadData();
+      populateSelect();
+      renderRanking();
+      renderHero();
+    }
+
+    init();
+  });
+</script>
+
+</body>
+</html>
